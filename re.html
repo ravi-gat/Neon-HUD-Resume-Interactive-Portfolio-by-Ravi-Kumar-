@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Ravi Kumar — Neon HUD Slides</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Orbitron:wght@400;600;700&display=swap" rel="stylesheet"/>
+
+<style>
+  :root{
+    --bg:#030b16;
+    --neon:#00f7ff;          /* electric neon blue */
+    --neon-strong:#00ccff;   /* deeper cyan highlight */
+    --ink:#e6faff;           /* bluish white text */
+    --deck-w:1100px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    color:var(--ink);
+    font-family:Orbitron,system-ui,Segoe UI,Roboto,Arial,sans-serif;
+    background:radial-gradient(1200px 800px at 70% -10%, #0b2033 0, #071421 45%, var(--bg) 70%);
+    overflow:hidden;
+  }
+
+  /* ===== BACKGROUND (always behind) ===== */
+  .bg{position:fixed; inset:0; z-index:1; pointer-events:none}
+  .stars,.stars::before,.stars::after{
+    content:""; position:absolute; inset:-200px; background-repeat:repeat;
+    background-image:
+      radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,.9) 99%, transparent 100%),
+      radial-gradient(1px 1px at 80% 70%, rgba(255,255,255,.7) 99%, transparent 100%),
+      radial-gradient(1px 1px at 50% 50%, rgba(255,255,255,.6) 99%, transparent 100%);
+    animation: drift 120s linear infinite; filter: drop-shadow(0 0 2px var(--neon)); opacity:.8;
+  }
+  .stars::before{animation-duration:180s;opacity:.5}
+  .stars::after{animation-duration:240s;opacity:.35}
+  @keyframes drift{from{transform:translateY(0)}to{transform:translateY(200px)}}
+
+  .moon{
+    position:absolute; right:6vw; top:6vh; width:120px; height:120px; border-radius:50%;
+    background:radial-gradient(circle at 35% 35%, #e8fdff 0, #bff7ff 35%, #63e9ff 60%, #0d5b6d 100%);
+    box-shadow:0 0 18px 8px #63e9ff66, 0 0 40px 12px #00d0ff55, inset 0 0 40px 10px #dffbff88;
+    outline:2px solid var(--neon);
+    filter:drop-shadow(0 0 12px var(--neon));
+  }
+
+  .hud-grid{
+    position:absolute; inset:0; opacity:.25; mix-blend-mode:screen;
+    background-image:
+      linear-gradient(transparent 97%, #00d0ff44 97%),
+      linear-gradient(90deg, transparent 97%, #00d0ff44 97%);
+    background-size:40px 40px,40px 40px;
+  }
+
+  .antarctica{position:absolute; left:0; right:0; bottom:0; height:26vh;
+    background:linear-gradient(180deg, transparent 0, #0a2134 60%, #0a2134 100%);
+    mask:linear-gradient(180deg, transparent 0, #000 25%);
+  }
+  .ice-ridge{
+    position:absolute; left:0; right:0; bottom:0; height:22vh;
+    background:radial-gradient(100% 180% at 50% 110%, #0dcfff55 0, transparent 60%);
+    border-top:1px solid #7ee8ff66;
+    filter:drop-shadow(0 -2px 6px var(--neon)) drop-shadow(0 0 28px #00cffe66);
+  }
+
+  .earth-stage{position:absolute; left:50%; bottom:8vh; transform:translateX(-50%); width:min(48vmin,520px); height:min(48vmin,520px)}
+  .earth{
+    position:absolute; inset:0; margin:auto; width:100%; height:100%; border-radius:50%;
+    background:
+      radial-gradient(80% 80% at 30% 30%, #062c3b 0, #031a24 55%, #010d15 100%),
+      repeating-conic-gradient(from 0deg, #06e1ff22 0 6deg, transparent 6deg 12deg);
+    border:2px solid var(--neon);
+    box-shadow:inset 0 0 40px #00e1ff55, 0 0 40px #00cffe55, 0 0 100px #00cffe44;
+    animation: spin 60s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .snowman{
+    position:absolute; left:50%; top:50%; width:12%; transform-origin:center;
+    filter: drop-shadow(0 0 6px var(--neon));
+    animation: orbit 30s linear infinite;
+  }
+  @keyframes orbit{
+    from{ transform:rotate(0deg) translateY(calc(-50% - 45%)) rotate(0deg) }
+    to  { transform:rotate(360deg) translateY(calc(-50% - 45%)) rotate(-360deg) }
+  }
+  .ball{width:100%; aspect-ratio:1; border-radius:50%;
+    border:2px solid var(--neon); background:radial-gradient(circle at 35% 35%, #bbf5ff 0, #03212a 70%);
+    box-shadow:inset 0 0 16px #00eaff55, 0 0 10px #00eaff66}
+  .snowman .mid{width:80%; margin:-10% auto 0}
+  .snowman .head{width:60%; margin:-10% auto 0}
+
+  /* Rocket */
+  .rocket{ position:absolute; left:-10vw; top:12vh; width:70px; aspect-ratio:1/2;
+    filter: drop-shadow(0 0 10px #9ff) drop-shadow(0 0 20px #0ff);
+    animation: rocketPath 28s cubic-bezier(.25,.8,.25,1) infinite;
+  }
+  .rocket svg{ width:100%; height:auto }
+  .rocket .flame{ transform-origin:50% 100%; animation: flame .12s ease-in-out infinite alternate }
+  @keyframes flame{ from{ transform:scaleY(.9) } to{ transform:scaleY(1.05) } }
+  @keyframes rocketPath{
+    0%{transform:translate(-10vw,10vh) rotate(10deg)}
+    25%{transform:translate(20vw,25vh) rotate(12deg)}
+    50%{transform:translate(55vw,12vh) rotate(-6deg)}
+    75%{transform:translate(80vw,30vh) rotate(-4deg)}
+    100%{transform:translate(110vw,18vh) rotate(5deg)}
+  }
+
+  /* Snow */
+  .snow{position:absolute; inset:0; overflow:hidden}
+  .flake{position:absolute; top:-5vh; width:6px; height:6px; border-radius:50%; background:#e6faff;
+    box-shadow:0 0 8px #bff, 0 0 16px #6ff;
+    animation: fall var(--t) linear infinite, sway 6s ease-in-out infinite}
+  @keyframes fall{to{transform:translateY(110vh) translateX(var(--x))}}
+  @keyframes sway{50%{transform:translateY(50vh) translateX(calc(var(--x)*.6))}}
+
+  /* ===== FOREGROUND ===== */
+  header{
+    position:relative; z-index:10; padding:14px 22px; text-align:center;
+    font:700 clamp(20px,2.6vw,30px)/1 Montserrat,Inter,sans-serif;
+    color:var(--neon); letter-spacing:.08em;
+    text-shadow:0 0 14px var(--neon-strong), 0 0 30px #9ff;
+    user-select:none;
+  }
+
+  .lock-btn{
+    position:fixed; right:16px; top:16px; z-index:12;
+    background:#091824; color:var(--neon);
+    border:1px solid var(--neon-strong); border-radius:12px;
+    padding:8px 12px; font:600 .95rem/1 Orbitron, sans-serif; cursor:pointer;
+    box-shadow:0 0 18px #00d5ff55, inset 0 0 14px #00d5ff22;
+  }
+
+  .deck-wrap{ position:relative; z-index:11; width:min(100%,var(--deck-w)); margin:10px auto 10vh; perspective:1200px }
+  .deck{
+    width:100%; min-height:480px; position:relative;
+    border:1px solid #00d5ff66; border-radius:18px; overflow:hidden;
+    background:linear-gradient(180deg, rgba(0,247,255,.10), rgba(0,247,255,.04));
+    box-shadow:0 0 0 1px rgba(0,247,255,.25) inset, 0 18px 60px rgba(0,0,0,.55), 0 0 60px rgba(0,247,255,.14);
+  }
+  .deck::after{
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background:
+      linear-gradient(rgba(0,247,255,.10) 1px,transparent 1px) 0 0/100% 32px,
+      linear-gradient(90deg, rgba(0,247,255,.10) 1px,transparent 1px) 0 0/32px 100%;
+    mix-blend-mode:screen;
+  }
+
+  .slide{
+    position:absolute; inset:0; padding:26px 36px; overflow:auto;
+    transform:translateZ(-200px) scale(.9); opacity:0; filter:blur(8px); pointer-events:none;
+    transition:transform .6s cubic-bezier(.2,.8,.2,1), opacity .45s, filter .45s, box-shadow .45s;
+    scrollbar-width:thin; scrollbar-color:#8feeff #071824;
+    background:rgba(0, 10, 28, .62);
+    border-left:2px solid rgba(0,247,255,.25);
+  }
+  .slide::-webkit-scrollbar{width:8px}
+  .slide::-webkit-scrollbar-thumb{background:#8feeff;border-radius:8px}
+  .slide::-webkit-scrollbar-track{background:#071824}
+  .slide.active{
+    transform:translateZ(0) scale(1.04);
+    opacity:1; filter:none; pointer-events:auto;
+    box-shadow:0 0 40px #00f7ff, 0 0 80px rgba(0,247,255,.35) inset;
+  }
+  .slide.prev{
+    transform:translateY(-44px) translateZ(-120px) rotateX(12deg) scale(.92);
+    opacity:.18;
+  }
+  .slide.next{
+    transform:translateY( 44px) translateZ(-120px) rotateX(-12deg) scale(.92);
+    opacity:.18;
+  }
+
+  h2{margin:0 0 10px; color:#bff6ff; text-shadow:0 0 12px #6fe9ff}
+  h3{margin:12px 0 6px; color:#60d9ff; text-shadow:0 0 10px #5fe1ff}
+  p, li{ line-height:1.7; font-size:1.02rem }
+
+  .idline{display:flex; align-items:center; gap:16px; flex-wrap:wrap}
+  .avatar{
+    width:110px; height:110px; border-radius:14px; object-fit:cover;
+    border:2px solid var(--neon); box-shadow:0 0 16px #6fe9ff88;
+  }
+  .chip-btn{
+    display:inline-flex; align-items:center; gap:8px; margin:6px 8px 0 0; padding:9px 13px;
+    border:1px solid #5fe1ff; border-radius:999px; background:#0a2030; color:#e6faff; cursor:pointer;
+    box-shadow:inset 0 0 12px #00d5ff22, 0 0 12px #00d5ff44;
+    transition:transform .2s ease, box-shadow .3s ease, background .3s ease;
+  }
+  .chip-btn:hover{ transform:translateY(-1px); background:#0f2c42; box-shadow:0 0 18px #00e7ff88, inset 0 0 10px #00e7ff33 }
+
+  .gallery{display:flex; gap:12px; flex-wrap:wrap; margin-top:10px}
+  .gallery img{
+    width:120px; height:120px; object-fit:cover; border-radius:12px;
+    border:2px solid #67e5ff; box-shadow:0 0 16px #67e5ff66;
+  }
+  .certificate{
+    display:block; width:min(540px,100%); max-height:38vh; object-fit:contain; margin:10px 0;
+    border:2px dashed #67e5ff; border-radius:10px; background:#071824;
+  }
+</style>
+</head>
+<body>
+  <!-- ===== BACKGROUND ===== -->
+  <div class="bg">
+    <div class="stars"></div>
+    <div class="moon"></div>
+    <div class="hud-grid"></div>
+    <div class="antarctica"><div class="ice-ridge"></div></div>
+    <div class="earth-stage">
+      <div class="earth"></div>
+      <div class="snowman"><div class="ball base"></div><div class="ball mid"></div><div class="ball head"></div></div>
+    </div>
+    <div class="rocket" aria-hidden="true">
+      <svg viewBox="0 0 120 240" aria-hidden="true">
+        <defs>
+          <linearGradient id="hull" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#e6faff"/><stop offset="100%" stop-color="#58e3ff"/></linearGradient>
+          <radialGradient id="glow" cx="50%" cy="30%" r="80%"><stop offset="0%" stop-color="#f7feff"/><stop offset="100%" stop-color="#7fe9ff"/></radialGradient>
+          <linearGradient id="fire" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#fff6a0"/><stop offset="50%" stop-color="#ffd65c"/><stop offset="100%" stop-color="#ff7a00"/></linearGradient>
+        </defs>
+        <ellipse cx="60" cy="80" rx="28" ry="60" fill="url(#hull)" stroke="#00ccff" stroke-width="2"/>
+        <circle cx="60" cy="70" r="12" fill="url(#glow)" stroke="#9ff" stroke-width="2"/>
+        <path d="M32,120 L10,170 L30,160 Z" fill="#7fe9ff" opacity=".8"/>
+        <path d="M88,120 L110,170 L90,160 Z" fill="#7fe9ff" opacity=".8"/>
+        <path d="M60,18 L78,60 L42,60 Z" fill="#dff8ff" stroke="#00ccff" stroke-width="2"/>
+        <path class="flame" d="M60,180 C45,200 55,220 60,235 C65,220 75,200 60,180 Z" fill="url(#fire)" opacity=".9"/>
+      </svg>
+    </div>
+    <div class="snow" id="snow"></div>
+  </div>
+
+  <!-- ===== FOREGROUND ===== -->
+  <header>Ravi Kumar G</header>
+  <button id="lockBtn" class="lock-btn" aria-pressed="false">🔓 Unlock</button>
+
+  <div class="deck-wrap">
+    <div class="deck" id="deck" tabindex="0" aria-label="Slide deck">
+
+      <!-- 1) SUMMARY -->
+      <section class="slide active" id="slide-summary">
+        <h2>SUMMARY</h2>
+        <p>
+          Driven to create robust and scalable web applications, with enthusiasm for exploring every layer of the software development lifecycle.
+          Constantly seeking opportunities to push beyond current capabilities by adopting emerging technologies, tools, and best practices.
+          Highly adaptable and inquisitive, with a passion for learning through practical, hands-on experience and tackling real-world challenges.
+          Skilled at contributing to both front-end and back-end development, as well as working with structured data systems, while collaborating
+          seamlessly with cross-functional teams to deliver impactful solutions.
+        </p>
+
+        <div class="idline" style="margin-top:10px">
+          <img class="avatar" src="ravi.jpg" alt="Ravi Kumar — profile photo">
+          <div>
+            <button class="chip-btn" onclick="openLink('tel:+919008788111')">📞 Phone</button>
+            <button class="chip-btn" onclick="openLink('mailto:ravi092005s@gmail.com')">✉ Email</button>
+            <button class="chip-btn" onclick="openLink('https://www.linkedin.com/in/ravikumar09')" aria-label="Open LinkedIn">LinkedIn</button>
+          </div>
+        </div>
+      </section>
+ 
+
+  
+
+      <!-- 3) CERTIFICATIONS -->
+      <section class="slide" id="slide-certifications">
+        <h2>CERTIFICATIONS</h2>
+        <ul>
+          <li>Full Stack Development — Udemy</li>
+          <li>DSA in C Programming — Udemy</li>
+          <li>Python Programming — Udemy</li>
+          <li>C Programming-Udemy</li>
+        </ul>
+        <!-- Add your certificate image paths when ready -->
+        <img class="certificate" src="web.jpg"  alt="Certificate 1 (add src)">
+        <img class="certificate" src="dsa.jpg" Certificate 2 (add src)">
+        <img class="certificate" src="python.jpg" Certificate 3 (add src)">
+        <img class="certificate" src="c.jpg" Certificate 3 (add src)">
+      </section>
+
+      <!-- 4) AWARDS & ACTIVITIES -->
+      <section class="slide" id="slide-awards">
+        <h2>AWARDS & ACTIVITIES</h2>
+        <ul>
+          <li>Top 10 Team — Ideathon 2023 (Global Academy Of Technology).</li>
+          <li>Organized a National Hackathon (GAT).</li>
+          <li>Organized 24<sup>th</sup> VTU Level Cultural Fest 2025 (GAT).</li>
+          <li>Represented college at VTU State Level in Volleyball and Netball.</li>
+          <li>Competed in VTU Inter-Zone Handball Tournament.</li>
+        </ul>
+      </section>
+
+      <!-- 5) EDUCATION -->
+      <section class="slide" id="slide-education">
+        <h2>EDUCATION</h2>
+        <ul>
+          <li><strong>Global Academy of Technology</strong> — Sep 2023 – Present. University of Engineering; Major: Artificial Intelligence &amp; Machine Learning. Focus on real-world applications, data-driven solutions, and emerging technologies.</li>
+          <li><strong>RNS Pre University College</strong> — Jun 2022 – Jun 2023. Pre-University; strong foundation in academics and problem-solving skills.</li>
+        </ul>
+      </section>
+
+      <!-- 6) TECHNICAL SKILLS -->
+      <section class="slide" id="slide-skills">
+        <h2>TECHNICAL SKILLS</h2>
+        <ul>
+          <li>HTML</li>
+          <li>CSS</li>
+          <li>SQL</li>
+          <li>Pandas</li>
+          <li>Numpy</li>
+          <li>Python</li>
+          <li>JavaScript</li>
+          <li>Java</li>
+          <li>C</li>
+          <li>NodeJS</li>
+          <li>ReactJS</li>
+          <li>C++</li>
+          <li>MongoDB</li>
+          <li>ExpressJS</li>
+        </ul>
+      </section>
+
+      <!-- 7) PROJECTS -->
+      <section class="slide" id="slide-projects">
+        <h1>PROJECTS</h1>
+        <h2>Machine Learning Projects</h2>
+
+        <h3>Clustering Music Genres with Machine Learning</h3>
+        <ul>
+          <li>Predictive analytics model achieving ~10% increase in forecast accuracy.</li>
+          <li>Cross-functional integration testing aligned with regulatory/safety guidelines.</li>
+          <li>Domain inputs leading to ~20% reduction in operational downtime.</li>
+        </ul>
+   
+        <h3>Customer Segmentation Using K-Means Clustering</h3>
+        <ul>
+          <li>Implemented a customer segmentation model using the Mall Customer Dataset to categorize shoppers based on Annual Income and Spending Score.</li>
+          <li>Performed data cleaning, preprocessing, and applied the Elbow Method to determine the optimal number of clusters.</li>
+          <li>Provided actionable insights for personalized marketing, targeted campaigns, and customer retention strategies.</li>
+          <li>Utilized K-Means clustering to identify key customer groups such as high-value customers, moderate spenders, and budget shoppers.</li>
+          <li>Strengthened practical understanding of unsupervised learning, machine learning algorithms, and data visualization.</li>
+          <li>Tools & Technologies: Python, Pandas, NumPy, Matplotlib, Seaborn, Scikit-learn</li>
+          <button class="chip-btn" onclick="openLink('https://github.com/ravi-gat/SCT_ML_01.git')" aria-label="Open github">Github link</button>
+        </ul>
+
+        <h3>House Price Prediction Using Linear Regression</h3>
+        <ul>
+          <li>Developed a predictive machine learning model to estimate house prices based on key features such as square footage, number of bedrooms, and number of bathrooms.</li>
+          <li>Performed data collection, cleaning, and preprocessing to ensure high-quality input for model training.</li>
+          <li>Conducted exploratory data analysis (EDA) using visualization and statistical techniques to identify feature relationships and trends.</li>
+          <li>Implemented and trained a Linear Regression model, evaluating performance with metrics including R² score and Mean Squared Error (MSE).</li>
+          <li>Strengthened understanding of supervised learning, regression analysis, and feature selection for real-world predictive applications.</li>
+          <li>Tools & Technologies: Python, Pandas, NumPy, Matplotlib, Seaborn, Scikit-learn</li>
+          <button class="chip-btn" onclick="openLink('https://github.com/ravi-gat/SCT_ML_02.git')" aria-label="Open github">Github link</button>
+        </ul>
+
+        <h3>Cats vs Dogs Classification Using Support Vector Machine (SVM)</h3>
+        <ul>
+          <li>Developed an image classification model using Support Vector Machine (SVM) to distinguish between cats and dogs.</li>
+          <li>Utilized the Kaggle Dogs vs Cats dataset for model training and evaluation.</li>
+          <li>Performed data preprocessing, including image resizing, grayscale conversion, and normalization to enhance input quality.</li>
+          <li>Extracted key image features and trained an SVM classifier, achieving strong accuracy and performance metrics.</li>
+          <li>Evaluated model effectiveness using accuracy score and confusion matrix for error analysis.</li>
+          <li>Gained hands-on experience in image preprocessing, feature extraction, and model evaluation, reinforcing understanding of machine learning and computer vision concepts.</li>
+          <li>Tools & Technologies: Python, OpenCV, NumPy, Scikit-learn, Matplotlib, Seaborn</li>
+          <button class="chip-btn" onclick="openLink('https://github.com/ravi-gat/SCT_ML_03.git')" aria-label="Open github">Github link</button>
+        </ul>
+
+         <h3>Hand Gesture Recognition Model</h3>
+        <ul>
+          <li>Developed a deep learning–based model capable of detecting and classifying hand gestures from images and video data for real-time interaction.</li>
+          <li>Built a complete gesture recognition pipeline including data preprocessing, model training, and real-time prediction.</li>
+          <li>Trained the model on a Hand Gesture Dataset to achieve high accuracy and robust performance across multiple gesture types.</li>
+          <li>Enabled real-time recognition for interactive applications such as AR/VR control, gaming, sign language translation, and touchless interfaces.</li>
+          <li>Strengthened expertise in computer vision, deep learning, and human-computer interaction (HCI) through hands-on implementation and experimentation.</li>
+          <li>Tools & Technologies: Python, TensorFlow/Keras, OpenCV, Mediapipe, NumPy, Matplotlib</li>
+          <button class="chip-btn" onclick="openLink('https://github.com/ravi-gat/SCT_ML_04.git')" aria-label="Open github">Github link</button>
+        </ul>
+
+      <h2>Web Development Projects</h2>
+
+       <h3>Responsive Landing Page</h3>
+        <ul>
+          <li>Designed and developed a responsive web landing page featuring a modern, user-friendly interface optimized for all device sizes.</li>
+          <li>Implemented an interactive navigation bar that remains fixed across pages and dynamically updates its style during scroll and hover events.</li>
+          <li>Applied UI/UX design principles to enhance visual appeal, accessibility, and user engagement.</li>
+          <li>Strengthened front-end development skills through hands-on implementation of responsive layouts and interactive elements.</li>
+          <li>Gained practical experience in building scalable and visually appealing web interfaces aligned with modern web standards.</li>
+          <li>Tools & Technologies: HTML, CSS, JavaScript</li>
+          <button class="chip-btn" onclick="openLink('https://github.com/ravi-gat/SCT_WD_01.git')" aria-label="Open github">Github link</button>
+        </ul>
+        
+       <h3>Stopwatch Web Application</h3>
+        <ul>
+          <li>Developed an interactive web-based stopwatch with start, pause, reset, and lap time tracking functionalities.</li>
+          <li>Designed a clean, responsive interface ensuring smooth usability across devices.</li>
+          <li>Implemented efficient JavaScript logic for precise time tracking and accurate lap measurements.</li>
+          <li>Practiced DOM manipulation, event handling, and UI responsiveness, strengthening front-end development skills.</li>
+          <li>Gained hands-on experience in building dynamic, user-interactive web applications aligned with modern web standards.</li>
+           <button class="chip-btn" onclick="openLink('https://github.com/ravi-gat/SCT_WD_02.git')" aria-label="Open github">Github link</button>
+        </ul>
+
+         <h3>Tic-Tac-Toe Web Application</h3>
+        <ul>
+          <li>Developed an interactive web-based Tic-Tac-Toe game playable against another user or the computer.</li>
+          <li>Implemented game logic to handle user input, track game state, and check winning conditions or draws.</li>
+          <li>Designed a responsive and engaging interface for seamless gameplay across devices.</li>
+          <li>Practiced JavaScript game logic, DOM manipulation, and event handling to build dynamic interactions.</li>
+          <li>Strengthened front-end development skills in HTML, CSS, and JavaScript while exploring fundamentals of web-based game development.</li>
+           <button class="chip-btn" onclick="openLink('https://github.com/ravi-gat/SCT_WD_03.git')" aria-label="Open github">Github link</button>
+        </ul>
+
+
+      </section>
+
+
+
+<script>
+/* ===== Snow (blue) ===== */
+(function(){
+  const c = document.getElementById('snow');
+  const n = Math.min(120, Math.floor(window.innerWidth/10));
+  for(let i=0;i<n;i++){
+    const f = document.createElement('div');
+    f.className='flake';
+    f.style.left = (Math.random()*100)+'vw';
+    f.style.setProperty('--x', (Math.random()*40-20)+'px');
+    f.style.setProperty('--t', (10+Math.random()*18).toFixed(2)+'s');
+    f.style.animationDelay = (Math.random()*-15).toFixed(2)+'s';
+    c.appendChild(f);
+  }
+})();
+
+/* ===== Open link helper (no raw URLs displayed) ===== */
+function openLink(url){ window.open(url, '_blank', 'noopener'); }
+
+/* ===== Slide logic with Lock ===== */
+const slides = Array.from(document.querySelectorAll('.slide'));
+let idx = 0, lastMove = 0, lastY = null, locked = false;
+const MOVE_THRESHOLD = 18, COOLDOWN = 160;
+
+function render(){
+  slides.forEach((s,i)=>{
+    s.classList.remove('active','prev','next');
+    if(i===idx) s.classList.add('active');
+    else if(i===idx-1) s.classList.add('prev');
+    else if(i===idx+1) s.classList.add('next');
+  });
+}
+function flip(dir){
+  if(locked) return;
+  const now = performance.now();
+  if(now - lastMove < COOLDOWN) return;
+  const next = Math.max(0, Math.min(slides.length-1, idx + dir));
+  if(next===idx) return;
+  idx = next; lastMove = now; render();
+}
+
+/* Mouse move */
+window.addEventListener('mousemove', e=>{
+  if(locked) return;
+  if(lastY===null){ lastY = e.clientY; return; }
+  const dy = e.clientY - lastY; lastY = e.clientY;
+  if(Math.abs(dy) >= MOVE_THRESHOLD) flip(dy>0 ? +1 : -1);
+});
+
+/* Wheel */
+window.addEventListener('wheel', e=>{ if(locked) return; if(Math.abs(e.deltaY)>=5) flip(e.deltaY>0?+1:-1); }, {passive:true});
+
+/* Keys */
+window.addEventListener('keydown', e=>{ if(locked) return; if(e.key==='ArrowDown') flip(+1); if(e.key==='ArrowUp') flip(-1); });
+
+/* Touch */
+let touchY=null;
+window.addEventListener('touchstart', e=>{ if(e.touches[0]) touchY = e.touches[0].clientY; }, {passive:true});
+window.addEventListener('touchmove', e=>{
+  if(locked) return;
+  if(!touchY||!e.touches[0]) return;
+  const dy = e.touches[0].clientY - touchY;
+  if(Math.abs(dy) > 28){ flip(dy>0 ? +1 : -1); touchY = e.touches[0].clientY; }
+},{passive:true});
+window.addEventListener('touchend', ()=>{ touchY=null; });
+
+/* Lock button */
+const lockBtn = document.getElementById('lockBtn');
+lockBtn.addEventListener('click', ()=>{
+  locked = !locked;
+  lockBtn.textContent = locked ? '🔒 Locked' : '🔓 Unlock';
+  lockBtn.setAttribute('aria-pressed', String(locked));
+});
+
+/* Init */
+render();
+</script>
+</body>
+</html>
